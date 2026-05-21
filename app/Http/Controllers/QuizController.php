@@ -24,33 +24,45 @@ class QuizController extends Controller
         return view('user.quiz', compact('obesityHistory','mentalHistory'));
     }
 
-    /** Hitung risiko obesitas (port logika dari WEB.html JS) */
+    /** Hitung risiko obesitas */
     public function calcObesity(Request $request)
     {
         $data = $request->validate([
             'height'   => 'required|numeric|min:100|max:250',
             'weight'   => 'required|numeric|min:20|max:300',
-            'fastfood' => 'required|numeric|in:1,2,3,4',
-            'exercise' => 'required|numeric|in:1,2,3,4',
-            'sleep'    => 'required|numeric|in:1,2,3,4',
+            'fastfood' => 'required|numeric|in:0,1,2,3',
+            'veggie'   => 'required|numeric|in:0,1,2,3',
+            'physical' => 'required|numeric|in:0,1,2,3',
+            'sitting'  => 'required|numeric|in:0,1,2,3',
+            'sugary'   => 'required|numeric|in:0,1,2,3',
+            'family'   => 'required|numeric|in:0,1,2',
         ]);
 
         $h   = $data['height'] / 100;
         $bmi = $data['weight'] / ($h * $h);
 
-        // Scoring (persis dari WEB.html)
-        $score = 0;
-        if ($bmi < 18.5)          $score += 1;
-        elseif ($bmi >= 25 && $bmi < 30) $score += 2;
-        elseif ($bmi >= 30)       $score += 3;
+        $bmi_score = 0;
+        if ($bmi >= 30) {
+            $bmi_score = 4;
+        } elseif ($bmi >= 25) {
+            $bmi_score = 2;
+        }
 
-        $score += $data['fastfood'] + (5 - $data['exercise']) + (5 - $data['sleep']);
+        $score = $bmi_score + $data['fastfood'] + $data['veggie'] + $data['physical'] + $data['sitting'] + $data['sugary'] + $data['family'];
 
-        [$level, $class, $message] = $score <= 6
-            ? ['Low Risk',      'result-low',    'Bagus! Pertahankan gaya hidup sehat Anda.']
-            : ($score <= 12
-                ? ['Moderate Risk', 'result-medium', 'Perlu perhatian. Tingkatkan aktivitas fisik dan kurangi fast food.']
-                : ['High Risk',     'result-high',   'Penting! Konsultasikan dengan dokter gizi dan mulai program olahraga rutin.']);
+        if ($score <= 5) {
+            $level = 'Rendah';
+            $class = 'result-low';
+            $message = 'Pertahankan pola makan seimbang dan rutinitas olahraga. Lanjutkan kebiasaan sehat yang sudah baik.';
+        } elseif ($score <= 13) {
+            $level = 'Sedang';
+            $class = 'result-medium';
+            $message = 'Perhatikan pola makan dan tingkatkan aktivitas fisik. Pertimbangkan konsultasi dengan ahli gizi untuk panduan diet yang lebih terstruktur.';
+        } else {
+            $level = 'Tinggi';
+            $class = 'result-high';
+            $message = 'Sangat disarankan untuk segera berkonsultasi dengan dokter atau ahli gizi. Perubahan gaya hidup signifikan diperlukan dan sebaiknya didampingi oleh profesional kesehatan.';
+        }
 
         $result = [
             'bmi'     => round($bmi, 1),
@@ -65,33 +77,42 @@ class QuizController extends Controller
             'result_data' => $result,
         ]);
 
-        $obesityResult  = $result + ['class' => $class];
-        $obesityHistory = QuizResult::where('user_id', Auth::id())
-            ->where('quiz_type','obesity')->latest()->take(5)->get();
-        $mentalHistory  = QuizResult::where('user_id', Auth::id())
-            ->where('quiz_type','mental')->latest()->take(5)->get();
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(array_merge($result, ['class' => $class]));
+        }
 
-        return view('user.quiz', compact('obesityResult','obesityHistory','mentalHistory'));
+        return redirect()->back();
     }
 
-    /** Hitung kesehatan mental (port logika dari WEB.html JS) */
+    /** Hitung kesehatan mental */
     public function calcMental(Request $request)
     {
         $data = $request->validate([
-            'anxiety'    => 'required|numeric|in:1,2,3,4',
-            'sleepissue' => 'required|numeric|in:1,2,3,4',
-            'depression' => 'required|numeric|in:1,2,3,4',
-            'stress'     => 'required|numeric|in:1,2,3,4',
-            'overwhelm'  => 'required|numeric|in:1,2,3,4',
+            'q1' => 'required|numeric|in:0,1,2,3,4',
+            'q2' => 'required|numeric|in:0,1,2,3,4',
+            'q3' => 'required|numeric|in:0,1,2,3,4',
+            'q4' => 'required|numeric|in:0,1,2,3,4',
+            'q5' => 'required|numeric|in:0,1,2,3,4',
+            'q6' => 'required|numeric|in:0,1,2,3,4',
+            'q7' => 'required|numeric|in:0,1,2,3,4',
+            'q8' => 'required|numeric|in:0,1,2,3,4',
         ]);
 
         $score = array_sum($data);
 
-        [$level, $class, $message] = $score <= 8
-            ? ['Low Risk',      'result-low',    'Kesehatan mental Anda baik! Pertahankan istirahat dan aktivitas positif.']
-            : ($score <= 15
-                ? ['Moderate Risk', 'result-medium', 'Ada beberapa gejala yang perlu perhatian. Coba teknik relaksasi dan berbicara dengan orang terdekat.']
-                : ['High Risk',     'result-high',   'Sangat direkomendasikan untuk berkonsultasi dengan psikolog atau konselor profesional.']);
+        if ($score <= 10) {
+            $level = 'Rendah';
+            $class = 'result-low';
+            $message = 'Kondisi mental relatif baik. Pertahankan kebiasaan positif seperti olahraga, tidur cukup, dan manajemen waktu yang sehat.';
+        } elseif ($score <= 21) {
+            $level = 'Sedang';
+            $class = 'result-medium';
+            $message = 'Terdapat indikasi stres yang perlu diperhatikan. Terapkan teknik relaksasi, batasi paparan stresor, dan pertimbangkan berbicara dengan orang terpercaya atau konselor.';
+        } else {
+            $level = 'Tinggi';
+            $class = 'result-high';
+            $message = 'Indikasi stres atau gangguan mental yang signifikan. Sangat disarankan untuk segera mencari bantuan dari psikolog atau psikiater profesional. Jangan abaikan kondisi ini.';
+        }
 
         $result = [
             'score'   => $score,
@@ -105,12 +126,10 @@ class QuizController extends Controller
             'result_data' => $result,
         ]);
 
-        $mentalResult   = $result + ['class' => $class];
-        $mentalHistory  = QuizResult::where('user_id', Auth::id())
-            ->where('quiz_type','mental')->latest()->take(5)->get();
-        $obesityHistory = QuizResult::where('user_id', Auth::id())
-            ->where('quiz_type','obesity')->latest()->take(5)->get();
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(array_merge($result, ['class' => $class]));
+        }
 
-        return view('user.quiz', compact('mentalResult','mentalHistory','obesityHistory'));
+        return redirect()->back();
     }
 }
