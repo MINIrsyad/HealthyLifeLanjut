@@ -62,6 +62,43 @@ padding:.7rem 1rem;border-radius:12px;margin-bottom:.5rem;background:#fff;}
 .risk-medium{background:#FFE787;color:#1E3006;}
 .risk-high  {background:#ED7A13;color:#fff;}
 
+/* ── Mental Health Error Banner (Flat 2D) ── */
+.mental-error-banner{
+    display:none;
+    background:#ED7A13;
+    border:2.5px solid #c45e00;
+    border-radius:14px;
+    padding:1rem 1.4rem;
+    margin-bottom:1.8rem;
+    color:#1E3006;
+    font-weight:700;
+    font-size:.97rem;
+    line-height:1.5;
+    letter-spacing:.01em;
+}
+.mental-error-banner.visible{display:flex;align-items:flex-start;gap:.7rem;}
+.mental-error-banner .banner-icon{font-size:1.4rem;flex-shrink:0;margin-top:.05rem;}
+.mental-error-banner .banner-text{flex:1;}
+.mental-error-banner .banner-text strong{display:block;font-size:1.05rem;margin-bottom:.25rem;color:#1E3006;}
+.mental-error-banner .banner-text span{color:#fff;font-weight:600;}
+
+/* ── Highlight merah untuk grup radio yang belum dipilih ── */
+.scale-options.input-error{
+    outline:2.5px solid #e53935;
+    border-radius:14px;
+    padding:4px;
+    background:rgba(229,57,53,.06);
+    transition:outline .2s,background .2s;
+}
+.input-group.field-error > label{
+    color:#c0392b;
+    font-weight:800;
+}
+.input-group.field-error > label::after{
+    content:" *";
+    color:#e53935;
+}
+
 @media(max-width:768px){
 .quiz-hero h1{font-size:2.5rem;}
 .quiz-card{padding:1.5rem;}
@@ -180,8 +217,18 @@ padding:.7rem 1rem;border-radius:12px;margin-bottom:.5rem;background:#fff;}
             </div>
         </div>
 
-        <form method="POST" action="{{ route('user.quiz.mental') }}" id="form-mental">
+        <form method="POST" action="{{ route('user.quiz.mental') }}" id="form-mental" novalidate>
             @csrf
+
+            {{-- ── Error Banner Flat 2D ── --}}
+            <div class="mental-error-banner" id="mental-error-banner" role="alert" aria-live="assertive">
+                <div class="banner-icon">⚠️</div>
+                <div class="banner-text">
+                    <strong>Ups! Formulir Belum Lengkap</strong>
+                    <span>Mohon isi semua opsi penilaian kesehatan mental terlebih dahulu sebelum melihat hasil analisis.</span>
+                </div>
+            </div>
+
             @foreach([
                 ['anxiety',    'Tingkat Kecemasan',         ['1'=>'Jarang','2'=>'Kadang','3'=>'Sering','4'=>'Sangat Sering']],
                 ['sleepissue', 'Masalah Tidur',             ['1'=>'Tidak','2'=>'Kadang','3'=>'Sering','4'=>'Setiap Hari']],
@@ -189,9 +236,9 @@ padding:.7rem 1rem;border-radius:12px;margin-bottom:.5rem;background:#fff;}
                 ['stress',     'Tingkat Stres',             ['1'=>'Rendah','2'=>'Sedang','3'=>'Tinggi','4'=>'Sangat Tinggi']],
                 ['overwhelm',  'Merasa Kewalahan/Overwhelm',['1'=>'Tidak','2'=>'Kadang','3'=>'Sering','4'=>'Selalu']],
             ] as [$name,$label,$options])
-            <div class="input-group">
-                <label>{{ $label }}</label>
-                <div class="scale-options">
+            <div class="input-group" id="group-{{ $name }}">
+                <label for="scale-{{ $name }}">{{ $label }}</label>
+                <div class="scale-options" id="scale-{{ $name }}" data-group="{{ $name }}">
                     @foreach($options as $val => $text)
                     <label class="scale-opt" style="cursor:pointer;">
                         <input type="radio" name="{{ $name }}" value="{{ $val }}" required style="display:none;">
@@ -267,50 +314,89 @@ document.querySelectorAll('.scale-options').forEach(group => {
 });
 
 // ══════════════════════════════════════════════════════
-// ── VALIDASI UNIVERSAL UNTUK SEMUA FORM QUIZ ──
+// ── VALIDASI FORM OBESITY (Number & Select) ──
 // ══════════════════════════════════════════════════════
-document.querySelectorAll('#form-obesity, #form-mental').forEach(form => {
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
+document.getElementById('form-obesity').addEventListener('submit', function (e) {
+    e.preventDefault();
+    let isValid = true;
 
-        let isValid = true;
+    this.querySelectorAll('input[type="number"][required], select[required]').forEach(field => {
+        const value = field.value ? field.value.trim() : '';
+        if (value === '') isValid = false;
+    });
 
-        // Validasi input dan select yang memiliki atribut required
-        this.querySelectorAll('input[type="number"][required], select[required]').forEach(field => {
-            const value = field.value ? field.value.trim() : '';
-            if (value === '') {
-                isValid = false;
-            }
+    if (!isValid) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Data Belum Lengkap',
+            text: 'Silakan isi semua data terlebih dahulu sebelum menghitung risiko obesitas.',
+            confirmButtonText: 'OK'
         });
+        return;
+    }
+    this.submit();
+});
 
-        // Validasi radio button berdasarkan group name
-        const radioGroups = new Set();
-        this.querySelectorAll('input[type="radio"][required]').forEach(radio => {
-            radioGroups.add(radio.name);
-        });
+// ══════════════════════════════════════════════════════
+// ── VALIDASI FORM MENTAL HEALTH (Radio Groups) ──
+// ══════════════════════════════════════════════════════
+document.getElementById('form-mental').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-        radioGroups.forEach(groupName => {
-            const checked = this.querySelector(
-                `input[name="${groupName}"]:checked`
-            );
-            if (!checked) {
-                isValid = false;
-            }
-        });
+    const banner      = document.getElementById('mental-error-banner');
+    const radioNames  = ['anxiety', 'sleepissue', 'depression', 'stress', 'overwhelm'];
+    let   isValid     = true;
+    let   firstError  = null;
 
-        // Jika ada field atau pilihan yang belum diisi
-        if (!isValid) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Data Belum Lengkap',
-                text: 'Silakan isi semua data dan pilih semua opsi terlebih dahulu sebelum melanjutkan proses perhitungan.',
-                confirmButtonText: 'OK'
-            });
-            return;
+    // Reset semua highlight dari validasi sebelumnya
+    radioNames.forEach(name => {
+        const scaleEl = document.getElementById('scale-' + name);
+        const groupEl = document.getElementById('group-' + name);
+        if (scaleEl) scaleEl.classList.remove('input-error');
+        if (groupEl) groupEl.classList.remove('field-error');
+    });
+    banner.classList.remove('visible');
+
+    // Cek setiap grup radio
+    radioNames.forEach(name => {
+        const checked = this.querySelector(`input[name="${name}"]:checked`);
+        if (!checked) {
+            isValid = false;
+            const scaleEl = document.getElementById('scale-' + name);
+            const groupEl = document.getElementById('group-' + name);
+            if (scaleEl) scaleEl.classList.add('input-error');
+            if (groupEl) groupEl.classList.add('field-error');
+            if (!firstError) firstError = groupEl || scaleEl;
         }
+    });
 
-        // Jika semua valid, lanjutkan submit
-        this.submit();
+    if (!isValid) {
+        // Tampilkan error banner
+        banner.classList.add('visible');
+        // Scroll ke banner agar user langsung lihat pesan
+        banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+
+    // Semua valid — sembunyikan banner dan lanjutkan submit
+    banner.classList.remove('visible');
+    this.submit();
+});
+
+// Hapus highlight merah saat user memilih opsi pada grup yang error
+document.querySelectorAll('#form-mental .scale-opt').forEach(opt => {
+    opt.addEventListener('click', function () {
+        const scaleEl = this.closest('.scale-options');
+        const groupEl = this.closest('.input-group');
+        if (scaleEl) scaleEl.classList.remove('input-error');
+        if (groupEl) groupEl.classList.remove('field-error');
+
+        // Jika semua grup sudah terisi, sembunyikan error banner
+        const allFilled = ['anxiety','sleepissue','depression','stress','overwhelm']
+            .every(n => document.querySelector(`#form-mental input[name="${n}"]:checked`));
+        if (allFilled) {
+            document.getElementById('mental-error-banner').classList.remove('visible');
+        }
     });
 });
 </script>
