@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — HealthyLife</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <meta name="description" content="Masuk ke akun HealthyLife Anda untuk memantau kesehatan harian.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -23,27 +24,18 @@
     </script>
     <style>
         * { font-family: 'Poppins', sans-serif; }
-
         .input-field {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.75rem;
-            font-size: 0.875rem;
-            transition: border-color 0.2s;
-            background: white;
-            color: #1E3006;
-            outline: none;
+            width: 100%; padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb; border-radius: 0.75rem;
+            font-size: 0.875rem; transition: border-color 0.2s;
+            background: white; color: #1E3006; outline: none;
         }
         .input-field:focus { border-color: #6A8042; }
-
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(24px); }
             to   { opacity: 1; transform: translateY(0); }
         }
         .fade-up { animation: fadeUp 0.5s ease; }
-
-        /* Decoration dots */
         .dot-pattern {
             background-image: radial-gradient(circle, #6A8042 1.5px, transparent 1.5px);
             background-size: 24px 24px;
@@ -56,7 +48,11 @@
     <div class="hidden lg:flex w-1/2 bg-moss items-center justify-center relative overflow-hidden">
         <div class="dot-pattern absolute inset-0 opacity-20"></div>
         <div class="relative z-10 text-center px-12">
-            <div class="text-6xl mb-6">🌿</div>
+
+            {{-- LOGO --}}
+            <img src="/images/logo.png" alt="HealthyLife Logo"
+                 class="w-28 h-28 object-contain mx-auto mb-6 drop-shadow-lg">
+
             <h1 class="text-gleam font-black text-4xl leading-tight mb-4">
                 Selamat Datang<br>di <span class="text-radiate">HealthyLife</span>
             </h1>
@@ -78,15 +74,21 @@
     {{-- Right Panel --}}
     <div class="flex-1 flex items-center justify-center p-8">
         <div class="w-full max-w-md fade-up">
+
             {{-- Header --}}
             <div class="mb-8">
+                {{-- Mobile logo --}}
                 <div class="lg:hidden flex items-center gap-2 mb-6">
-                    <span class="text-3xl">🌿</span>
+                    <img src="/images/logo.png" alt="HealthyLife Logo" class="w-9 h-9 object-contain">
                     <span class="text-moss font-black text-xl">HealthyLife</span>
                 </div>
                 <h2 class="text-moss font-black text-3xl">Masuk Akun</h2>
-                <p class="text-moss text-sm mt-1 opacity-60">Belum punya akun?
-                    <a href="{{ route('register') }}" class="text-herb font-semibold hover:text-radiate transition-colors">Daftar sekarang</a>
+                <p class="text-moss text-sm mt-1 font-medium">
+                    Belum punya akun?
+                    <a href="{{ route('register') }}"
+                       class="text-radiate font-bold underline underline-offset-2 hover:text-herb transition-colors">
+                        Daftar sekarang
+                    </a>
                 </p>
             </div>
 

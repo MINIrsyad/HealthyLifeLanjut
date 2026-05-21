@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar — HealthyLife</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
     <meta name="description" content="Buat akun HealthyLife gratis dan mulai perjalanan hidup sehat Anda.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -47,7 +48,11 @@
     <div class="hidden lg:flex w-1/2 bg-herb items-center justify-center relative overflow-hidden">
         <div class="dot-pattern absolute inset-0 opacity-20"></div>
         <div class="relative z-10 text-center px-12">
-            <div class="text-6xl mb-6">🌱</div>
+
+            {{-- LOGO --}}
+            <img src="/images/logo.png" alt="HealthyLife Logo"
+                 class="w-28 h-28 object-contain mx-auto mb-6 drop-shadow-lg">
+
             <h1 class="text-pearl font-black text-4xl leading-tight mb-4">
                 Bergabung &<br>Mulai <span class="text-gleam">Hidup Sehat</span>
             </h1>
@@ -68,14 +73,20 @@
     {{-- Right Panel --}}
     <div class="flex-1 flex items-center justify-center p-8">
         <div class="w-full max-w-md fade-up">
+
             <div class="mb-8">
+                {{-- Mobile logo --}}
                 <div class="lg:hidden flex items-center gap-2 mb-6">
-                    <span class="text-3xl">🌿</span>
+                    <img src="/images/logo.png" alt="HealthyLife Logo" class="w-9 h-9 object-contain">
                     <span class="text-moss font-black text-xl">HealthyLife</span>
                 </div>
                 <h2 class="text-moss font-black text-3xl">Buat Akun Baru</h2>
-                <p class="text-moss text-sm mt-1 opacity-60">Sudah punya akun?
-                    <a href="{{ route('login') }}" class="text-herb font-semibold hover:text-radiate transition-colors">Masuk di sini</a>
+                <p class="text-moss text-sm mt-1 font-medium">
+                    Sudah punya akun?
+                    <a href="{{ route('login') }}"
+                       class="text-radiate font-bold underline underline-offset-2 hover:text-herb transition-colors">
+                        Masuk di sini
+                    </a>
                 </p>
             </div>
 
@@ -157,7 +168,6 @@
             btn.style.opacity = input.type === 'text' ? '1' : '0.4';
         }
 
-        // Password strength indicator
         document.getElementById('password').addEventListener('input', function() {
             const val = this.value;
             const bar = document.getElementById('strengthBar');
