@@ -102,13 +102,13 @@
             @endif
 
             {{-- Form --}}
-            <form method="POST" action="{{ route('login') }}" class="space-y-5">
+            <form id="loginForm" method="POST" action="{{ route('login') }}" class="space-y-5">
                 @csrf
 
                 <div>
                     <label class="block text-moss text-sm font-semibold mb-1.5">Email</label>
-                    <input id="email" type="email" name="email" value="{{ old('email') }}"
-                           required autocomplete="email"
+                    <input id="email" type="text" name="email" value="{{ old('email') }}"
+                           autocomplete="email"
                            class="input-field @error('email') border-radiate @enderror"
                            placeholder="nama@email.com">
                 </div>
@@ -117,7 +117,7 @@
                     <label class="block text-moss text-sm font-semibold mb-1.5">Password</label>
                     <div class="relative">
                         <input id="password" type="password" name="password"
-                               required autocomplete="current-password"
+                               autocomplete="current-password"
                                class="input-field pr-12"
                                placeholder="••••••••">
                         <button type="button" onclick="togglePassword('password', this)"
@@ -155,6 +155,57 @@
             input.type = input.type === 'password' ? 'text' : 'password';
             btn.style.opacity = input.type === 'text' ? '1' : '0.4';
         }
+
+        // ============================================================
+        // CLIENT-SIDE VALIDATION — runs BEFORE form is submitted
+        // Uses native window.alert() for automation test compatibility
+        // ============================================================
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            var email    = document.getElementById('email').value.trim();
+            var password = document.getElementById('password').value;
+
+            // TC01: Both empty
+            if (email === '' && password === '') {
+                e.preventDefault();
+                window.alert('Email dan Password wajib diisi');
+                return false;
+            }
+
+            // TC02: Email empty
+            if (email === '') {
+                e.preventDefault();
+                window.alert('Email wajib diisi');
+                return false;
+            }
+
+            // TC03: Password empty
+            if (password === '') {
+                e.preventDefault();
+                window.alert('Password wajib diisi');
+                return false;
+            }
+
+            // TC04: Invalid email format
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                window.alert('Format email tidak valid');
+                return false;
+            }
+
+            // All client-side checks passed — allow form submission to server
+            return true;
+        });
     </script>
+
+    {{-- ============================================================ --}}
+    {{-- SERVER-SIDE ALERT — renders after redirect back from controller --}}
+    {{-- Uses native window.alert() for automation test compatibility --}}
+    {{-- ============================================================ --}}
+    @if(session('login_alert'))
+    <script>
+        window.alert(@json(session('login_alert')));
+    </script>
+    @endif
 </body>
 </html>

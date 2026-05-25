@@ -107,6 +107,13 @@
         </div>
     </div>
 
+    {{-- Login Alert (native JS alert for automation testing) --}}
+    @if(session('login_alert'))
+    <script>
+        window.alert(@json(session('login_alert')));
+    </script>
+    @endif
+
     @stack('scripts')
 </body>
 </html>

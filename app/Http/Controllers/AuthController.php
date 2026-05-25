@@ -19,24 +19,49 @@ class AuthController extends Controller
     /** Proses login */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email'    => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $email    = $request->input('email', '');
+        $password = $request->input('password', '');
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Server-side fallback validation (client-side JS handles primary UX)
+        if (empty($email) && empty($password)) {
+            return back()->with('login_alert', 'Email dan Password wajib diisi')->onlyInput('email');
+        }
+        if (empty($email)) {
+            return back()->with('login_alert', 'Email wajib diisi')->onlyInput('email');
+        }
+        if (empty($password)) {
+            return back()->with('login_alert', 'Password wajib diisi')->onlyInput('email');
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return back()->with('login_alert', 'Format email tidak valid')->onlyInput('email');
+        }
+
+        // Check if the email exists in the database
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            // Email not found — we can't know if the password "matches" anything
+            return back()->with('login_alert', 'Email tidak ditemukan')->onlyInput('email');
+        }
+
+        // Email exists — check password
+        if (!Hash::check($password, $user->password)) {
+            return back()->with('login_alert', 'Password salah')->onlyInput('email');
+        }
+
+        // Both correct — attempt login (will succeed since we already verified)
+        if (Auth::attempt(['email' => $email, 'password' => $password], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             if (Auth::user()->isAdmin()) {
-                return redirect()->route('admin.dashboard');
+                return redirect()->route('admin.dashboard')->with('login_alert', 'Login berhasil');
             }
 
-            return redirect()->route('home');
+            return redirect()->route('home')->with('login_alert', 'Login berhasil');
         }
 
-        return back()->withErrors([
-            'email' => 'Email atau password tidak sesuai.',
-        ])->onlyInput('email');
+        // Fallback (should not reach here)
+        return back()->with('login_alert', 'Email atau password tidak sesuai.')->onlyInput('email');
     }
 
     /** Tampilkan halaman register */
