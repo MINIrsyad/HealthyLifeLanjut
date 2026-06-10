@@ -44,12 +44,12 @@
 </head>
 <body class="bg-pearl min-h-screen flex">
 
-    {{-- Left Panel --}}
+    {{-- Panel Kiri --}}
     <div class="hidden lg:flex w-1/2 bg-herb items-center justify-center relative overflow-hidden">
         <div class="dot-pattern absolute inset-0 opacity-20"></div>
         <div class="relative z-10 text-center px-12">
 
-            {{-- LOGO --}}
+            {{-- Logo Aplikasi --}}
             <img src="/images/logo.png" alt="HealthyLife Logo"
                  class="w-28 h-28 object-contain mx-auto mb-6 drop-shadow-lg">
 
@@ -70,12 +70,13 @@
         </div>
     </div>
 
-    {{-- Right Panel --}}
+    {{-- Panel Kanan --}}
     <div class="flex-1 flex items-center justify-center p-8">
         <div class="w-full max-w-md fade-up">
 
+            {{-- Bagian Header --}}
             <div class="mb-8">
-                {{-- Mobile logo --}}
+                {{-- Logo untuk Tampilan Mobile --}}
                 <div class="lg:hidden flex items-center gap-2 mb-6">
                     <img src="/images/logo.png" alt="HealthyLife Logo" class="w-9 h-9 object-contain">
                     <span class="text-moss font-black text-xl">HealthyLife</span>
@@ -90,6 +91,7 @@
                 </p>
             </div>
 
+            {{-- Menampilkan Pesan Error Jika Ada --}}
             @if($errors->any())
                 <div class="bg-radiate bg-opacity-10 border-2 border-radiate rounded-xl px-4 py-3 mb-6">
                     @foreach($errors->all() as $error)
@@ -98,10 +100,12 @@
                 </div>
             @endif
 
+            {{-- Form Register Akun Baru --}}
             <form method="POST" action="{{ route('register') }}" class="space-y-5">
                 @csrf
 
                 <div>
+                    {{-- Input Nama Lengkap --}}
                     <label class="block text-moss text-sm font-semibold mb-1.5">Nama Lengkap</label>
                     <input id="name" type="text" name="name" value="{{ old('name') }}"
                            required autocomplete="name"
@@ -110,6 +114,7 @@
                 </div>
 
                 <div>
+                    {{-- Input Email --}}
                     <label class="block text-moss text-sm font-semibold mb-1.5">Email</label>
                     <input id="email" type="email" name="email" value="{{ old('email') }}"
                            required autocomplete="email"
@@ -118,6 +123,7 @@
                 </div>
 
                 <div>
+                    {{-- Input Password --}}
                     <label class="block text-moss text-sm font-semibold mb-1.5">Password</label>
                     <div class="relative">
                         <input id="password" type="password" name="password"
@@ -130,6 +136,7 @@
                 </div>
 
                 <div>
+                    {{-- Input Konfirmasi Password --}}
                     <label class="block text-moss text-sm font-semibold mb-1.5">Konfirmasi Password</label>
                     <div class="relative">
                         <input id="password_confirmation" type="password" name="password_confirmation"
@@ -141,7 +148,7 @@
                     </div>
                 </div>
 
-                {{-- Strength indicator --}}
+                {{-- Indikator Kekuatan Password --}}
                 <div id="strengthBar" class="h-1.5 rounded-full bg-gray-200 overflow-hidden hidden">
                     <div id="strengthFill" class="h-full rounded-full transition-all duration-300 w-0"></div>
                 </div>
@@ -153,6 +160,7 @@
                     </p>
                 </div>
 
+                {{-- Tombol Submit Register --}}
                 <button type="submit"
                         class="w-full bg-radiate hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors text-sm">
                     Daftar Sekarang →
@@ -162,12 +170,14 @@
     </div>
 
     <script>
+        // Fungsi untuk menyembunyikan/menampilkan teks password
         function togglePassword(id, btn) {
             const input = document.getElementById(id);
             input.type = input.type === 'password' ? 'text' : 'password';
             btn.style.opacity = input.type === 'text' ? '1' : '0.4';
         }
 
+        // Script untuk mengecek kekuatan password secara realtime
         document.getElementById('password').addEventListener('input', function() {
             const val = this.value;
             const bar = document.getElementById('strengthBar');

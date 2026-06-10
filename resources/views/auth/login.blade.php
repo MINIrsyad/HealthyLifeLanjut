@@ -44,12 +44,12 @@
 </head>
 <body class="bg-pearl min-h-screen flex">
 
-    {{-- Left Panel --}}
+    {{-- Panel Kiri --}}
     <div class="hidden lg:flex w-1/2 bg-moss items-center justify-center relative overflow-hidden">
         <div class="dot-pattern absolute inset-0 opacity-20"></div>
         <div class="relative z-10 text-center px-12">
 
-            {{-- LOGO --}}
+            {{-- Logo Aplikasi --}}
             <img src="/images/logo.png" alt="HealthyLife Logo"
                  class="w-28 h-28 object-contain mx-auto mb-6 drop-shadow-lg">
 
@@ -71,13 +71,13 @@
         </div>
     </div>
 
-    {{-- Right Panel --}}
+    {{-- Panel Kanan --}}
     <div class="flex-1 flex items-center justify-center p-8">
         <div class="w-full max-w-md fade-up">
 
-            {{-- Header --}}
+            {{-- Bagian Header --}}
             <div class="mb-8">
-                {{-- Mobile logo --}}
+                {{-- Logo untuk Tampilan Mobile --}}
                 <div class="lg:hidden flex items-center gap-2 mb-6">
                     <img src="/images/logo.png" alt="HealthyLife Logo" class="w-9 h-9 object-contain">
                     <span class="text-moss font-black text-xl">HealthyLife</span>
@@ -92,7 +92,8 @@
                 </p>
             </div>
 
-            {{-- Error Alert --}}
+        
+            {{-- Menampilkan Pesan Error Jika Ada --}}
             @if($errors->any())
                 <div class="bg-radiate bg-opacity-10 border-2 border-radiate rounded-xl px-4 py-3 mb-6">
                     @foreach($errors->all() as $error)
@@ -101,11 +102,12 @@
                 </div>
             @endif
 
-            {{-- Form --}}
+            {{-- Form Login --}}
             <form id="loginForm" method="POST" action="{{ route('login') }}" class="space-y-5">
                 @csrf
 
                 <div>
+                    {{-- Input Email --}}
                     <label class="block text-moss text-sm font-semibold mb-1.5">Email</label>
                     <input id="email" type="text" name="email" value="{{ old('email') }}"
                            autocomplete="email"
@@ -114,6 +116,7 @@
                 </div>
 
                 <div>
+                    {{-- Input Password --}}
                     <label class="block text-moss text-sm font-semibold mb-1.5">Password</label>
                     <div class="relative">
                         <input id="password" type="password" name="password"
@@ -128,13 +131,15 @@
                 </div>
 
                 <div class="flex items-center justify-between">
+                    {{-- Checkbox Ingat Saya --}}
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" name="remember" id="remember"
                                class="w-4 h-4 accent-herb rounded">
                         <span class="text-moss text-sm">Ingat saya</span>
                     </label>
                 </div>
-
+        
+                {{-- Tombol Submit Login --}}
                 <button type="submit"
                         class="w-full bg-radiate hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors text-sm">
                     Masuk →
@@ -150,6 +155,7 @@
     </div>
 
     <script>
+        // Fungsi untuk menyembunyikan/menampilkan teks password
         function togglePassword(id, btn) {
             const input = document.getElementById(id);
             input.type = input.type === 'password' ? 'text' : 'password';
@@ -157,8 +163,8 @@
         }
 
         // ============================================================
-        // CLIENT-SIDE VALIDATION — runs BEFORE form is submitted
-        // Uses native window.alert() for automation test compatibility
+        // VALIDASI SISI KLIEN - Berjalan sebelum form disubmit
+        // Menggunakan window.alert() untuk pesan error
         // ============================================================
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             var email    = document.getElementById('email').value.trim();
@@ -199,8 +205,8 @@
     </script>
 
     {{-- ============================================================ --}}
-    {{-- SERVER-SIDE ALERT — renders after redirect back from controller --}}
-    {{-- Uses native window.alert() for automation test compatibility --}}
+    {{-- ALERT SISI SERVER - Muncul setelah redirect dari controller --}}
+    {{-- Menggunakan window.alert() bawaan browser --}}
     {{-- ============================================================ --}}
     @if(session('login_alert'))
     <script>
